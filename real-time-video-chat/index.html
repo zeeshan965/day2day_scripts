@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="icon" type="image/svg+xml" href="/vite.svg"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Video Chat App</title>
+</head>
+<body class="bg-gray-100">
+<div class="container mx-auto py-8">
+    <h1 class="text-3xl font-bold text-center mb-8">Start your Webcam</h1>
+    <div class="flex justify-between">
+        <div class="w-1/2 bg-white rounded-lg shadow-lg p-6 mr-2">
+            <h2 class="text-xl font-bold mb-4">Start Local Stream</h2>
+            <video id="webcamVideo" autoplay playsinline muted></video>
+            <button id="webcamButton" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Start webcam</button>
+        </div>
+        <div class="w-1/2 bg-white rounded-lg shadow-lg p-6 ml-2">
+            <h2 class="text-xl font-bold mb-4">Remote Stream</h2>
+            <video id="remoteVideo" autoplay playsinline></video>
+        </div>
+    </div>
+</div>
+<div class="container mx-auto py-8">
+    <h2 class="text-2xl font-bold mb-4">2. Create a new Call</h2>
+    <button id="callButton" disabled class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Create Call (offer)</button>
+
+    <h2 class="text-2xl font-bold mt-8 mb-4">3. Join a Call</h2>
+    <p class="mb-4">Answer the call from a different browser window or device</p>
+    <input id="callInput" class="border border-gray-400 rounded px-4 py-2 mr-4" placeholder="Enter the Call ID"/>
+    <button id="answerButton" disabled class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Answer</button>
+
+    <h2 class="text-2xl font-bold mt-8 mb-4">4. Hangup</h2>
+    <button id="hangupButton" disabled class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Hangup</button>
+</div>
+
+
+<script type="module" src="./main.js"></script>
+</body>
+</html>
