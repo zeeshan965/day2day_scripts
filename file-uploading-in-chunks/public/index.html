@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>File Upload Example</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div id="loader-overlay" class="hide">
+    <div class="loader"></div>
+</div>
+
+<div id="page-content">
+    <div class="container">
+        <h1>File Upload Example</h1>
+        <form id="uploadForm">
+            <input type="file" id="fileInput" name="fileInput">
+            <button type="submit">Upload</button>
+        </form>
+        <p id="progressText" style="text-align: center;margin: 0"></p>
+        <progress style="margin: 0" id="progressBar" value="0" max="100"></progress>
+    </div>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
