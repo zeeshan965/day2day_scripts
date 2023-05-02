@@ -3,12 +3,14 @@ const progressBar = document.getElementById("progressBar")
 const progressText = document.getElementById("progressText")
 const fileInput = document.getElementById("fileInput")
 const loader = document.querySelector("#loader-overlay")
-const socket = io();
+
+//const socket = io();
 
 /**
  * @param offset
  * @param CHUNK_SIZE
  * @param file
+ * @param text
  * @returns {*}
  */
 function progressToggle(offset, CHUNK_SIZE, file, text = 'Uploading') {
@@ -26,7 +28,7 @@ uploadForm.addEventListener('submit', async (e) => {
     console.log(bytesToSize(file.size))
     loader.classList.toggle('hide');
 
-    const CHUNK_SIZE = 1024 * 1024; // 10MB chunk size
+    const CHUNK_SIZE = 1024 * 1024 * 5; // 5MB chunk size
     const chunks = [];
     let start = 0, offset = 0;
 
@@ -43,12 +45,14 @@ uploadForm.addEventListener('submit', async (e) => {
         //console.log(`${file.name}.${i}`)
         formData.append('chunk', chunks[i], `${file.name}.${i}`);
         try {
-            const response = await fetch('/upload', {
+            //const url = '/upload';
+            const url = '/upload.php';
+            const response = await fetch(url, {
                 method: 'POST',
                 body: formData,
                 headers: {
                     'file-name': file.name,
-                    'chunk-index': i,
+                    'chunk-index': i + 1,
                     'file-extension': fileExtension,
                     'total-chunks': chunks.length
                 },

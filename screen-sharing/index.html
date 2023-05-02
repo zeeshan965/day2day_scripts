@@ -1,0 +1,24 @@
+<html lang="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<video id="remoteVideo" autoplay style="width: 640px;height: 480px;"></video>
+<script>
+    (async function () {
+        try {
+
+            let mediaStream = await navigator.mediaDevices.getDisplayMedia({video: true, audio: true});
+            const videoElement = document.getElementById("remoteVideo");
+            videoElement.srcObject = mediaStream;
+        } catch (e) {
+            console.log('Unable to acquire screen capture: ' + e);
+        }
+    })();
+</script>
+</body>
+</html>
