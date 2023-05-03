@@ -1,6 +1,6 @@
 <?php
 
-require '../vendor/autoload.php';
+require dirname(__DIR__) . '/vendor/autoload.php';
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
@@ -14,18 +14,19 @@ $fileName = $_SERVER['HTTP_FILE_NAME'];
 $chunkIndex = $_SERVER['HTTP_CHUNK_INDEX'];
 $fileExtension = $_SERVER['HTTP_FILE_EXTENSION'];
 $totalChunks = $_SERVER['HTTP_TOTAL_CHUNKS'];
+$fileName = str_replace(' ', '', $fileName);
 
 // Define the directory to save the file
 // Create the directory if it doesn't exist
-$dir = dirname(__DIR__) . '/uploads/' . str_replace(' ', '', $fileName) . '/';
+$dir = dirname(__DIR__) . '/uploads/' . $fileName . '/';
 if (!file_exists($dir)) mkdir($dir, 0777, true);
 
 $target_file = $dir . basename('chunk_' . $chunkIndex . '.ext');
-if ($totalChunks === "1") $target_file = $dir . basename(uniqid() . time() . '.' . $fileExtension);
+if ($totalChunks === "1") $target_file = $dir . basename(uniqid() . '_' . $fileName . '.' . $fileExtension);
 $status = move_uploaded_file($file_tmp, $target_file);
 
-if ($totalChunks === $chunkIndex) {
-    combineChunks($dir, $fileExtension);
+if ($totalChunks > 1 && $totalChunks === $chunkIndex) {
+    combineChunks($dir, $fileExtension, $fileName);
 }
 
 exit($status ? json_encode(["status" => "File uploaded successfully"]) :
@@ -47,13 +48,13 @@ function send_response()
 
 /**
  * @param $dir
- * @param $combineChunks
  * @param $fileExtension
+ * @param $fileName
  * @return void
  */
-function combineChunks($dir, $fileExtension)
+function combineChunks($dir, $fileExtension, $fileName)
 {
-    $finalFilePath = $dir . 'eagles_nest' . $fileExtension;
+    $finalFilePath = $dir . uniqid() . '_' . $fileName . '_combined.' . $fileExtension;
     $chunkFilePrefix = 'chunk_';
     $chunkFileExt = '.ext';
     $chunkFiles = glob($dir . $chunkFilePrefix . '*' . $chunkFileExt);

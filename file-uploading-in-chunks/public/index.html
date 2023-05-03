@@ -14,6 +14,11 @@
         <h1>File Upload Example</h1>
         <form id="uploadForm">
             <input type="file" id="fileInput" name="fileInput">
+            <p>
+                Upload using Fetch <input type="radio" name="type" data-value="fetch" checked/>
+                Upload using Socket <input type="radio" name="type" data-value="socket"/>
+            </p>
+
             <button type="submit">Upload</button>
         </form>
         <p id="progressText" style="text-align: center;margin: 0"></p>
@@ -21,6 +26,6 @@
     </div>
 </div>
 <!--<script src="/socket.io/socket.io.js"></script>-->
-<script src="main.js"></script>
+<script src="./main.js"></script>
 </body>
 </html>
