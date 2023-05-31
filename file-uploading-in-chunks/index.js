@@ -5,6 +5,7 @@ const PORT = process.env.PORT || 2000;
 const {Server} = require("socket.io");
 const fs = require('fs');
 const path = require('path');
+const {createWriteStream} = require("fs");
 
 app.use(express.static('public'));
 app.post('/upload', async (req, res) => {
@@ -14,23 +15,27 @@ app.post('/upload', async (req, res) => {
     const chunkIndex = req.headers['chunk-index'];
     const totalChunks = req.headers['total-chunks'];
     const extension = req.headers['file-extension'];
-    let buffer = null, filename = '', chunks = [], totalBytesInBuffer = 0,
-        fileName = `${generateRandomString(10)}_${Date.now()}.index.${chunkIndex}`;
+    let buffer = null, chunks = [], totalBytesInBuffer = 0,
+        fileName = `${generateRandomString(10)}_${Date.now()}.chunk.${chunkIndex}.ext`;
 
     req.on('data', (chunk) => {
         chunks.push(Buffer.from(chunk))
         totalBytesInBuffer += chunk.length;
     });
-
-    req.on('end', () => {
+    //$target_file = $dir . basename('chunk_' . $chunkIndex . '.ext');
+    req.on('end', async () => {
         chunks = Buffer.concat(chunks, totalBytesInBuffer);
-        filename = `${generateRandomString(10)}_${Date.now()}.${extension}`;
-        const filePath = path.join(dir, filename);
+        if (totalChunks === 1) fileName = `${generateRandomString(10)}_${Date.now()}.${extension}`;
+        const filePath = path.join(dir, fileName);
         fs.writeFile(filePath, chunks, (err) => {
-            if (err) console.error(err);
-            else console.log(`Saved ${filename} to ${filePath}`);
-        });
-        res.send({status: 'success!'}).status(200);
+            if (err) {
+                console.error(err);
+                res.send({status: 'failed!'}).status(500);
+            } else {
+                console.log(`Saved ${fileName} to ${filePath}`);
+                res.send({status: 'success!'}).status(200);
+            }
+        })
     });
 
 

@@ -73,8 +73,8 @@ async function sendPostRequest(file, chunks, i, fileExtension) {
     const formData = new FormData();
     formData.append('chunk', chunks[i], `${file.name}.${i}`);
     try {
-        //const url = '/upload'; //when using Node backend
-        const url = '/upload.php'; //when using PHP backend
+        const url = '/upload'; //when using Node backend
+        // const url = '/upload.php'; //when using PHP backend
         const response = await fetch(url, {
             method: 'POST',
             body: formData,
@@ -88,6 +88,7 @@ async function sendPostRequest(file, chunks, i, fileExtension) {
         if (response.ok) {
             const body = await response.json();
             console.log(body);
+            return body;
         } else {
             console.error('Request failed');
         }
