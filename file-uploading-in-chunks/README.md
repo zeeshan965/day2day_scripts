@@ -44,7 +44,7 @@ To run the front end part of the application you need to run backend server in e
 > `php -S 127.0.0.1:8006`
 
 ## Back End:
-For backend I used Node and PHP, You can use any one of them.
+For BackEnd I used Node and PHP, You can use any one of them.
 
 ### PHP:
 
@@ -58,6 +58,13 @@ Run composer install inside **file-uploading-in-chunks** directory.
 
 upload_max_filesize = 20M
 post_max_size = 20M
+
+//start the php server from public directory
+php -S 127.0.0.1:8000
+
+//comment out these two items for php
+<script src="/socket.io/socket.io.js"></script>
+initSocketIo();
 ```
 
 #### Using Sockets

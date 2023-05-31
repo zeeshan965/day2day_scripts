@@ -1,8 +1,8 @@
 // Server-side code
 const express = require('express');
 const app = express();
-const http = require('http').createServer(app);
-const io = require('socket.io')(http);
+const PORT = process.env.PORT || 2000;
+const {Server} = require("socket.io");
 const fs = require('fs');
 const path = require('path');
 
@@ -59,21 +59,27 @@ app.post('/upload', async (req, res) => {
     req.on('end', () => writeStream.end());*/
 });
 
-io.on('connection', (socket) => {
-    socket.on('chunk', (data) => {
-        const filePath = `uploads/${data.fileName}`;
-        const fileStream = fs.createWriteStream(filePath, {flags: 'a'});
-
-        fileStream.write(Buffer.from(data.data));
-        fileStream.end();
-
-        // Send acknowledgement back to client
-        socket.emit('ack', {offset: data.chunkOffset});
-    });
+const server = app.listen(PORT, () => {
+    console.log("Your app is listening on port " + server.address().port);
 });
 
-http.listen(2000, () => {
-    console.log('Server is listening on port 2000');
+const io = new Server(server, {maxHttpBufferSize: 1e8});
+io.on("connection", (socket) => {
+    console.log("A user connected");
+    socket.on("upload", (fileData, callback) => {
+        console.log(fileData); // ArrayBuffer
+    });
+    socket.on('message', (data) => {
+        console.log('message:', data);
+    });
+    socket.on("status", (data) => {
+        console.log('status: ', data); // ArrayBuffer
+    });
+
+    // Handle client disconnection
+    socket.on("disconnect", () => {
+        console.log("A user disconnected");
+    });
 });
 
 function generateRandomString(length) {

@@ -36,7 +36,7 @@ exit($status ? json_encode(["status" => "File uploaded successfully"]) :
 /**
  * @return string
  */
-function send_response()
+function send_response(): string
 {
     http_response_code(500);
     $error = array("status" => "error", "message" => "something went wrong!");

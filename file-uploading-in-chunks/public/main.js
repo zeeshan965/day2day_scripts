@@ -3,8 +3,7 @@ const progressBar = document.getElementById("progressBar");
 const progressText = document.getElementById("progressText");
 const fileInput = document.getElementById("fileInput");
 const loader = document.querySelector("#loader-overlay");
-const web_socket_uri = 'ws://localhost:3700';
-let socket;
+let socket, socketIo;
 uploadForm.addEventListener('submit', async (e) => {
     e.preventDefault(); // Prevent default form submission behavior
     const file = fileInput.files[0];
@@ -15,27 +14,53 @@ uploadForm.addEventListener('submit', async (e) => {
     const CHUNK_SIZE = 1024 * 1024 * 5; // 5MB chunk size
     const fileExtension = file.name.split('.').pop();
     const postType = document.querySelector('[name="type"]:checked').getAttribute('data-value');
-    console.log(postType);
-    const chunks = breakFileIntoChunks(start, file, offset, CHUNK_SIZE, fileExtension, postType);
-
-    console.log('File Size: ', bytesToSize(file.size))
+    const chunks = breakFileIntoChunks(start, file, offset, CHUNK_SIZE);
+    // console.log(chunks);
+    // console.log('File Size: ', bytesToSize(file.size))
     console.log('Total chunk: ', chunks.length)
-
-    if (postType === 'fetch') {
-        for (let i = 0; i < chunks.length; i++) {
+    for (let i = 0; i < chunks.length; i++) {
+        if (postType === 'fetch') {
             await sendPostRequest(file, chunks, i, fileExtension)
             offset = progressToggle(offset, CHUNK_SIZE, file);
             if (chunks.length === (i + 1)) loader.classList.toggle('hide');
+        } else {
+            await sendChunkUsingSocket(file, chunks[i], i, fileExtension, chunks.length);
         }
-    }
 
+    }
 
     console.log('File upload complete');
 
 });
 
+/**
+ * @param file
+ * @param chunk
+ * @param i
+ * @param fileExtension
+ * @param chunksLength
+ * @returns {Promise<boolean>}
+ */
+function sendChunkUsingSocket(file, chunk, i, fileExtension, chunksLength) {
+    return new Promise((resolve, reject) => {
+        const fileName = file.name.replaceAll(' ', '')
+        const payload = `{"fileName":"${fileName}","chunkIndex":${i + 1},"fileExtension":"${fileExtension}","totalChunks":${chunksLength}}`;
+        const reader = new FileReader();
+        reader.onloadend = (e) => {
+            const blob = e.target.result.split(',');
+            const content = payload + '---chunk---' + blob[1];
+            socket.send(content);
+            resolve(true);
+        };
+        reader.readAsDataURL(chunk);
+    });
+}
+
 //web socket server, running from PHP
 initWebSocket();
+
+//web socket server, running from Node
+initSocketIo();
 
 /**
  * @param file
@@ -76,36 +101,15 @@ async function sendPostRequest(file, chunks, i, fileExtension) {
  * @param file
  * @param offset
  * @param CHUNK_SIZE
- * @param fileExtension
- * @param postType
  * @returns {*[]}
  */
-function breakFileIntoChunks(start, file, offset, CHUNK_SIZE, fileExtension, postType) {
+function breakFileIntoChunks(start, file, offset, CHUNK_SIZE) {
     const chunks = [];
-    let chunkIndex = 0;
-
     while (start < file.size) {
         const chunk = file.slice(start, start + CHUNK_SIZE);
         chunks.push(chunk);
         start += CHUNK_SIZE;
         offset = progressToggle(offset, CHUNK_SIZE, file, 'Preparing...');
-
-        if (postType === 'socket') {
-            const reader = new FileReader();
-            reader.readAsArrayBuffer(chunk);
-            reader.onload = () => {
-                socket.send(JSON.stringify({
-                    file: {
-                        'file-name': file.name,
-                        'chunk-index': chunkIndex + 1,
-                        'file-extension': fileExtension,
-                        'total-chunks': chunks.length,
-                        data: Array.from(new Uint8Array(reader.result))
-                    }
-                }));
-                chunkIndex++;
-            }
-        }
     }
     return chunks;
 }
@@ -114,7 +118,7 @@ function breakFileIntoChunks(start, file, offset, CHUNK_SIZE, fileExtension, pos
  * Initialize web sockets using php
  */
 function initWebSocket() {
-
+    const web_socket_uri = 'ws://localhost:3700';
     const conn = new WebSocket(web_socket_uri);
     conn.onerror = (event) => {
         console.error('WebSocket error:', event);
@@ -137,6 +141,25 @@ function initWebSocket() {
     // Listen for messages
     conn.addEventListener("message", (event) => {
         console.log('onMessage with data:', event.data);
+    });
+}
+
+/**
+ * Initialize web sockets using php
+ */
+function initSocketIo() {
+    //const web_socket_uri = 'ws://localhost:200';
+    socketIo = io();
+
+    socketIo.on("connect", () => {
+        console.log("Connected to server");
+        socketIo.emit('status', {message: 'hello world!'})
+    });
+    socketIo.on('message', (data) => {
+        console.log('message: ', data);
+    });
+    socketIo.on("disconnect", () => {
+        console.log("Disconnected from server");
     });
 }
 
@@ -168,28 +191,3 @@ function bytesToSize(bytes) {
         style: 'unit', unit: units[unitIndex]
     }).format(bytes / (1024 ** unitIndex))
 }
-
-//const conn = io();
-//while (offset < file.size) {
-//const chunk = file.slice(offset, offset + CHUNK_SIZE);
-//const chunkReader = new FileReader();
-
-//chunkReader.readAsArrayBuffer(chunk);
-/*chunkReader.onload = () => {
-    const arrayBuffer = chunkReader.result;
-    socket.emit('chunk', {
-        data: arrayBuffer,
-        fileName: file.name,
-        fileType: file.type,
-        chunkSize: CHUNK_SIZE,
-        chunkOffset: offset,
-        fileSize: file.size
-    });
-    offset += CHUNK_SIZE;
-
-    // Update progress bar
-    const percentComplete = Math.round((offset / file.size) * 100);
-    progressBar.value = percentComplete;
-};*/
-//}
-

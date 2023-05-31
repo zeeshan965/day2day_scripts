@@ -28,43 +28,32 @@ class UploadHandler implements MessageComponentInterface
      */
     public function onMessage(ConnectionInterface $from, $msg)
     {
-        // The client will send the file in chunks, so we need to keep track of the chunks
-        $data = json_decode($msg, true);
-        $file = $data['file'];
+        if (isset($msg)) {
+            $data = explode("---chunk---", $msg);
+            $fileData = json_decode($data[0] ?? '', true);
+            $fileName = $fileData['fileName'];
+            $chunkIndex = $fileData['chunkIndex'];
+            $fileExtension = $fileData['fileExtension'];
+            $totalChunks = $fileData['totalChunks'];
+            $fileName = str_replace(' ', '', $fileName);
+            $dir = dirname(__DIR__) . '/uploads/' . $fileName . '/';
+            if (!file_exists($dir)) mkdir($dir, 0777, true);
 
-        $fileName = $file['file-name'];
-        $chunkIndex = $file['chunk-index'];
-        $fileExtension = $file['file-extension'];
-        $totalChunks = $file['total-chunks'];
-        $fileName = str_replace(' ', '', $fileName);
-        $file_tmp = $file['data'];
-        dump($fileName, $chunkIndex, $totalChunks, $fileExtension);
+            $content = base64_decode($data[1]);
+            $target_file = $dir . basename('chunk_' . $chunkIndex . '.ext');
+            if ($totalChunks === "1") $target_file = $dir . basename(uniqid() . '_' . $fileName);
+            $finalFile = fopen($target_file, 'w');
+            fwrite($finalFile, $content);
+            fclose($finalFile);
 
-
-
-        //$from->send(json_encode(['message' => $data['message']]));
-
-        if (isset($data['name']) && isset($data['chunk']) && isset($data['totalChunks']) && isset($data['index'])) {
-            // Save the chunk to a file on the server
-            $fileName = $data['name'] . '_' . $data['index'];
-
-            file_put_contents($fileName, base64_decode($data['chunk']));
-
-            // If we've received all the chunks, combine them into a single file
-            if (($data['index'] + 1) == $data['totalChunks']) {
-                $finalFileName = $data['name'];
-
-                for ($i = 0; $i < $data['totalChunks']; $i++) {
-                    $chunkFileName = $data['name'] . '_' . $i;
-                    $chunkData = file_get_contents($chunkFileName);
-                    file_put_contents($finalFileName, $chunkData, FILE_APPEND);
-                    unlink($chunkFileName);
-                }
-
-                // Notify the client that the file has been saved
-                $from->send(json_encode(['status' => 'success']));
+            if ($totalChunks > 1 && $totalChunks === $chunkIndex) {
+                $this->combineChunks($dir, $fileExtension, $fileName);
             }
+
         }
+
+
+        //$from->send(json_encode(["status" => "Error uploading file"]));
     }
 
     /**
@@ -92,4 +81,25 @@ class UploadHandler implements MessageComponentInterface
         $conn->close();
     }
 
+    /**
+     * @param $dir
+     * @param $fileExtension
+     * @param $fileName
+     * @return void
+     */
+    public function combineChunks($dir, $fileExtension, $fileName): void
+    {
+        $finalFilePath = $dir . uniqid() . '_' . '_combined.' . $fileExtension;
+        $chunkFilePrefix = 'chunk_';
+        $chunkFileExt = '.ext';
+        $chunkFiles = glob($dir . $chunkFilePrefix . '*' . $chunkFileExt);
+        natsort($chunkFiles);
+        $finalFile = fopen($finalFilePath, 'w');
+        foreach ($chunkFiles as $chunkFile) {
+            $chunkContent = file_get_contents($chunkFile);
+            fwrite($finalFile, $chunkContent);
+            unlink($chunkFile);
+        }
+        fclose($finalFile);
+    }
 }

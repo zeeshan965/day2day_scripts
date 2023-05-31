@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PhpIncludePathManager">
+    <include_path>
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/guzzlehttp/psr7" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/react/dns" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/react/event-loop" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/react/promise-timer" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/react/stream" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/react/socket" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/react/promise" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/composer" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/symfony/var-dumper" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/react/cache" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/symfony/polyfill-mbstring" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/ralouphie/getallheaders" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/cboden/ratchet" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/ratchet/rfc6455" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/psr/http-factory" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/psr/http-message" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/symfony/routing" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/symfony/http-foundation" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/symfony/deprecation-contracts" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/larapack/dd" />
+      <path value="$PROJECT_DIR$/file-uploading-in-chunks/vendor/evenement/evenement" />
+    </include_path>
+  </component>
+  <component name="PhpProjectSharedConfiguration" php_language_level="8.1">
+    <option name="suggestChangeDefaultLanguageLevel" value="false" />
+  </component>
+</project>
