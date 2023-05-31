@@ -57,7 +57,7 @@ function sendChunkUsingSocket(file, chunk, i, fileExtension, chunksLength) {
 }
 
 //web socket server, running from PHP
-initWebSocket();
+//initWebSocket();
 
 //web socket server, running from Node
 initSocketIo();

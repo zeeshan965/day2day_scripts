@@ -68,5 +68,14 @@ initSocketIo();
 ```
 
 #### Using Sockets
+> **PHP:** Explore initWebSocket() method and web_socket.php file for php websockets implementation.
+>
 
 ### Node:
+> Inside terminal and run `node index.js`
+> 
+
+```javascript
+//
+
+```
