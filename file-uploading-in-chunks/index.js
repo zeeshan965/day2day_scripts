@@ -5,7 +5,39 @@ const PORT = process.env.PORT || 2000;
 const {Server} = require("socket.io");
 const fs = require('fs');
 const path = require('path');
-const {createWriteStream} = require("fs");
+const chunkFileExt = '.ext';
+const chunkFilePrefix = '.chunk';
+
+/**
+ * @param dir
+ * @param fileName
+ * @param filePath
+ * @param extension
+ */
+const combineChunks = (dir, fileName, filePath, extension) => {
+    const chunkFiles = fs.readdirSync(dir)
+        .filter(file => file.startsWith('') && file.endsWith(chunkFileExt))
+        .sort((a, b) => {
+            const numA = a.replace(chunkFilePrefix, '').replace(chunkFileExt, '');
+            const numB = b.replace(chunkFilePrefix, '').replace(chunkFileExt, '');
+            return numA.split('.')[1] - numB.split('.')[1];
+        });
+
+    const finalFilePath = path.join(dir, `${generateRandomString(10)}_${Date.now()}_combined.${extension}`);
+    return new Promise((resolve, reject) => {
+        const finalFile = fs.createWriteStream(finalFilePath);
+        for (const chunkFile of chunkFiles) {
+            const chunkFileStream = fs.createReadStream(path.join(dir, chunkFile));
+            console.log(chunkFileStream.read())
+            chunkFileStream.pipe(finalFile, {end: false});
+            chunkFileStream.on('end', () => {
+                //fs.unlinkSync(path.join(dir, chunkFile));
+            });
+        }
+
+        resolve(true);
+    });
+};
 
 app.use(express.static('public'));
 app.post('/upload', async (req, res) => {
@@ -27,13 +59,18 @@ app.post('/upload', async (req, res) => {
         chunks = Buffer.concat(chunks, totalBytesInBuffer);
         if (totalChunks === 1) fileName = `${generateRandomString(10)}_${Date.now()}.${extension}`;
         const filePath = path.join(dir, fileName);
-        fs.writeFile(filePath, chunks, (err) => {
+        fs.writeFile(filePath, chunks, async (err) => {
             if (err) {
                 console.error(err);
                 res.send({status: 'failed!'}).status(500);
             } else {
-                console.log(`Saved ${fileName} to ${filePath}`);
-                res.send({status: 'success!'}).status(200);
+                if (chunkIndex === totalChunks) {
+                    await combineChunks(dir, fileName, filePath, extension);
+                    res.send({status: 'success!'}).status(200);
+                } else {
+                    console.log(`Saved ${fileName} to ${filePath}`);
+                    res.send({status: 'success!'}).status(200);
+                }
             }
         })
     });
